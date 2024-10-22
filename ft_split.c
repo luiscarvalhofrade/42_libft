@@ -9,68 +9,83 @@
 /*   Updated: 2024/10/22 15:44:15 by luide-ca         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
-
 #include "libft.h"
 
-static int	ft_word_counder(char const *s, char c)
+static int	ft_word_counter(char const *s, char c)
 {
-	int	counter_char_div;
-	int	word_counter;
+	int		counter_char_div;
+	int		word_counter;
 	char	*ptr_s;
 
 	counter_char_div = 0;
 	ptr_s = (char *)s;
 	while (*ptr_s)
 	{
-		if (*s == c)
+		if (*ptr_s == c && (ptr_s == s || *(ptr_s - 1) != c))
 			counter_char_div++;
 		ptr_s++;
 	}
-	if (counter_char_div == 0)
-		word_counter = 1;
-	else
-	{
-		if (ft_strlen(s) == (ft_strrchr(s, c) + 1))
-			word_counter = counter_char_div;
-		else
-			word_counter = counter_char_div + 1;
-	}
+	if (ft_strlen(s) > 0 && *(ptr_s - 1) == c)
+		counter_char_div--;
+	word_counter = counter_char_div + 1;
 	return (word_counter);
 }
 
-static char	*ft_bool_matrix(char const *s, char c)
+static int	ft_start_pos(char *s, int c)
 {
-	char	*ptr_bool;
-	char	*ptr_s;
+	size_t	i_start_pos;
 
-	ptr_s = (char *)s;
-	ptr_bool = (char *)malloc((ft_strlen(s) + 1) * sizeof(char));
-	while (*ptr_s)
-	{
-		if (*ptr_s == c)
-			*ptr_bool = '1';
-		else
-			*ptr_bool = '0';
-		ptr_bool++;
-		ptr_s++;
-	}
-	return (ptr_bool);
+	i_start_pos = 0;
+	while (s[i_start_pos] && s[i_start_pos] == c)
+		i_start_pos++;
+	return (i_start_pos);
+}
+
+static int	ft_len_str(char *s, int c)
+{
+	size_t	i_total_len;
+
+	i_total_len = 0;
+	while (s[i_total_len] && s[i_total_len] != c)
+		i_total_len++;
+	return (i_total_len);
 }
 
 char	**ft_split(char const *s, char c)
 {
-	int		string_counter;
+	int		strings_counter;
 	int		i_arr;
+	int		next_start_pos;
+	int		next_len;
+	char	*ptr_s;
 	char	**ptr_arr;
-	char	*ptr_bool;
 
-	string_counter = ft_word_counder(s, c);
-	ptr_arr = (char **)malloc(string_counter * sizeof(char *));
-	ptr_bool = ft_bool_matrix(s, c);
-
-	while (i_arr < string_counter)
+	if (!s)
+		return (0);
+	strings_counter = ft_word_counter(s, c);
+	if (strings_counter == 0)
+		return (0);
+	ptr_arr = (char **)malloc((strings_counter + 1) * sizeof(char *));
+	if (!ptr_arr)
+		return (0);
+	i_arr = 0;
+	ptr_s = (char *)s;
+	while (i_arr < strings_counter)
 	{
-		ft_substr(char const *s, unsigned int start, size_t len)
-		ptr_arr[i_arr] = (char *)malloc(string_size * sizeof(char));
+		next_start_pos = ft_start_pos(ptr_s, c);
+		next_len = ft_len_str(ptr_s + next_start_pos, c);
+		ptr_arr[i_arr] = (char *)malloc((next_len + 1) * sizeof(char));
+		if (!ptr_arr[i_arr])
+		{
+			while (i_arr > 0)
+				free(ptr_arr[--i_arr]);
+			free(ptr_arr);
+			return (0);
+		}
+		ft_strlcpy(ptr_arr[i_arr], ptr_s + next_start_pos, next_len + 1);
+		i_arr++;
+		ptr_s += next_start_pos + next_len;
 	}
+	ptr_arr[i_arr] = NULL;
+	return (ptr_arr);
 }
