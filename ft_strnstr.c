@@ -15,21 +15,18 @@
 char	*ft_strnstr(const char *big, const char *little, size_t len)
 {
 	size_t	little_len;
-	size_t	i;
 
-	if (!big)
-		return (0);
+	little_len = ft_strlen(little);
 	if (*little == '\0')
 		return ((char *)big);
-	little_len = ft_strlen(little);
-	if (little_len > len)
-		return (0);
-	i = 0;
-	while (big[i] && i + little_len <= len)
+	while (*big && len > 0)
 	{
-		if (ft_memcmp(&big[i], little, little_len) == 0)
-			return ((char *)&big[i]);
-		i++;
+		if (little_len > len)
+			return (0);
+		if (ft_strncmp(big, little, little_len) == 0)
+			return ((char *)big);
+		big++;
+		len--;
 	}
 	return (0);
 }

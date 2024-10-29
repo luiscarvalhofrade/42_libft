@@ -11,81 +11,73 @@
 /* ************************************************************************** */
 #include "libft.h"
 
-static int	ft_word_counter(char const *s, char c)
+static int	ft_count_words(const char *s, char c)
 {
-	int		counter_char_div;
-	int		word_counter;
-	char	*ptr_s;
+	int	count;
 
-	counter_char_div = 0;
-	ptr_s = (char *)s;
-	while (*ptr_s)
+	count = 0;
+	while (*s)
 	{
-		if (*ptr_s == c && (ptr_s == s || *(ptr_s - 1) != c))
-			counter_char_div++;
-		ptr_s++;
+		while (*s == c)
+			s++;
+		if (*s)
+		{
+			count++;
+			while (*s && *s != c)
+				s++;
+		}
 	}
-	if (ft_strlen(s) > 0 && *(ptr_s - 1) == c)
-		counter_char_div--;
-	word_counter = counter_char_div + 1;
-	return (word_counter);
+	return (count);
 }
 
-static int	ft_start_pos(char *s, int c)
+static char	*ft_allocate_word(const char *s, char c)
 {
-	size_t	i_start_pos;
+	int		len;
+	char	*word;
 
-	i_start_pos = 0;
-	while (s[i_start_pos] && s[i_start_pos] == c)
-		i_start_pos++;
-	return (i_start_pos);
+	len = 0;
+	while (s[len] && s[len] != c)
+		len++;
+	word = malloc((len + 1) * sizeof(char));
+	if (!word)
+		return (NULL);
+	ft_strlcpy(word, s, len + 1);
+	return (word);
 }
 
-static int	ft_len_str(char *s, int c)
+static char	**ft_free_split(char **result, int i)
 {
-	size_t	i_total_len;
-
-	i_total_len = 0;
-	while (s[i_total_len] && s[i_total_len] != c)
-		i_total_len++;
-	return (i_total_len);
+	while (i > 0)
+		free(result[--i]);
+	free(result);
+	return (NULL);
 }
 
 char	**ft_split(char const *s, char c)
 {
-	int		strings_counter;
-	int		i_arr;
-	int		next_start_pos;
-	int		next_len;
-	char	*ptr_s;
-	char	**ptr_arr;
+	char	**result;
+	int		i;
 
+	i = 0;
 	if (!s)
-		return (0);
-	strings_counter = ft_word_counter(s, c);
-	if (strings_counter == 0)
-		return (0);
-	ptr_arr = (char **)malloc((strings_counter + 1) * sizeof(char *));
-	if (!ptr_arr)
-		return (0);
-	i_arr = 0;
-	ptr_s = (char *)s;
-	while (i_arr < strings_counter)
+		return (NULL);
+	result = malloc((ft_count_words(s, c) + 1) * sizeof(char *));
+	if (!result)
+		return (NULL);
+	while (*s)
 	{
-		next_start_pos = ft_start_pos(ptr_s, c);
-		next_len = ft_len_str(ptr_s + next_start_pos, c);
-		ptr_arr[i_arr] = (char *)malloc((next_len + 1) * sizeof(char));
-		if (!ptr_arr[i_arr])
+		while (*s == c)
+			s++;
+		if (*s)
 		{
-			while (i_arr > 0)
-				free(ptr_arr[--i_arr]);
-			free(ptr_arr);
-			return (0);
+			result[i] = ft_allocate_word(s, c);
+			if (!result[i])
+				return (ft_free_split(result, i));
+			i++;
+			while (*s && *s != c)
+				s++;
 		}
-		ft_strlcpy(ptr_arr[i_arr], ptr_s + next_start_pos, next_len + 1);
-		i_arr++;
-		ptr_s += next_start_pos + next_len;
 	}
-	ptr_arr[i_arr] = NULL;
-	return (ptr_arr);
+	result[i] = NULL;
+	return (result);
 }
